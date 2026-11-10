@@ -1,0 +1,1955 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DASHBOARD DATA NOTIFIKASI KES PENYAKIT BERJANGKIT PEJABAT KESIHATAN KEPONG</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Chart.js Datalabels Plugin CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+  
+  <!-- PapaParse for robust CSV fetching & parsing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+  <!-- Phosphor Icons & FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Google Fonts: Plus Jakarta Sans / Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            epid: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              400: '#2dd4bf',
+              500: '#14b8a6',
+              600: '#0d9488',
+              900: '#134e4a',
+            },
+            cyber: {
+              dark: '#0B1120',
+              card: '#111C33',
+              border: '#1E293B',
+              accent: '#38BDF8',
+              alert: '#F43F5E',
+              warning: '#F59E0B',
+              success: '#10B981'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* 2026 Sleek Glassmorphism & Micro-interactions */
+    body {
+      background-color: #070D18;
+      color: #E2E8F0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .glass-card {
+      background: rgba(17, 28, 51, 0.7);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.3s ease;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+      box-shadow: 0 14px 35px -8px rgba(14, 165, 233, 0.15);
+    }
+
+    /* Light Mode Adaptive Styles */
+    body.light-mode {
+      background-color: #F1F5F9;
+      color: #0F172A;
+    }
+    body.light-mode .glass-card {
+      background: rgba(255, 255, 255, 0.92);
+      border-color: #CBD5E1;
+      box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.35);
+    }
+    body.light-mode .glass-card:hover {
+      border-color: rgba(14, 165, 233, 0.5);
+      box-shadow: 0 14px 30px -5px rgba(14, 165, 233, 0.25);
+    }
+    body.light-mode header {
+      background-color: rgba(255, 255, 255, 0.92) !important;
+      border-color: #CBD5E1 !important;
+    }
+    body.light-mode header h1 {
+      color: #0F172A !important;
+    }
+    body.light-mode header .bg-slate-950 {
+      background-color: #F8FAFC !important;
+      border: 1px solid #E2E8F0;
+    }
+    body.light-mode header .bg-slate-800 {
+      background-color: #E2E8F0 !important;
+      color: #1E293B !important;
+      border-color: #CBD5E1 !important;
+    }
+    body.light-mode select,
+    body.light-mode input {
+      background-color: #FFFFFF !important;
+      border-color: #94A3B8 !important;
+      color: #0F172A !important;
+    }
+    body.light-mode select option {
+      background-color: #FFFFFF !important;
+      color: #0F172A !important;
+    }
+    body.light-mode thead {
+      background-color: #E2E8F0 !important;
+      color: #1E293B !important;
+    }
+    body.light-mode thead th {
+      color: #334155 !important;
+      border-bottom: 2px solid #CBD5E1 !important;
+    }
+    body.light-mode tbody tr:hover {
+      background-color: rgba(226, 232, 240, 0.6) !important;
+    }
+    body.light-mode .text-white {
+      color: #0F172A !important;
+    }
+    body.light-mode .text-slate-200,
+    body.light-mode .text-slate-300 {
+      color: #1E293B !important;
+    }
+    body.light-mode .text-slate-400 {
+      color: #475569 !important;
+    }
+    body.light-mode .text-slate-500 {
+      color: #64748B !important;
+    }
+    body.light-mode .text-slate-600 {
+      color: #475569 !important;
+    }
+    body.light-mode #tablePaginationInfo {
+      color: #1E293B !important;
+      font-weight: 600;
+    }
+    body.light-mode .bg-slate-900,
+    body.light-mode .bg-slate-900\/50,
+    body.light-mode .bg-slate-900\/90 {
+      background-color: #F8FAFC !important;
+      border-color: #CBD5E1 !important;
+    }
+    body.light-mode .border-slate-800,
+    body.light-mode .border-slate-800\/80,
+    body.light-mode .border-slate-800\/60,
+    body.light-mode .border-slate-700,
+    body.light-mode .border-slate-700\/80 {
+      border-color: #CBD5E1 !important;
+    }
+    body.light-mode .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]) {
+      border-color: #E2E8F0 !important;
+    }
+    body.light-mode .bg-slate-800 {
+      background-color: #E2E8F0 !important;
+      color: #1E293B !important;
+    }
+    body.light-mode .bg-slate-800:hover {
+      background-color: #CBD5E1 !important;
+    }
+    body.light-mode footer {
+      border-color: #CBD5E1 !important;
+    }
+    body.light-mode footer p {
+      color: #475569 !important;
+    }
+    body.light-mode .metric-glow-rose,
+    body.light-mode .metric-glow-cyan,
+    body.light-mode .metric-glow-amber,
+    body.light-mode .metric-glow-emerald {
+      text-shadow: none;
+    }
+    body.light-mode #metricTotalCases {
+      color: #0284C7 !important;
+    }
+    body.light-mode #metricPendingCases {
+      color: #D97706 !important;
+    }
+    body.light-mode #metricIgnoredCases {
+      color: #E11D48 !important;
+    }
+    body.light-mode #metricDiagCount {
+      color: #059669 !important;
+    }
+    body.light-mode #metricHospCount {
+      color: #0F172A !important;
+    }
+
+    .metric-glow-rose {
+      text-shadow: 0 0 20px rgba(244, 63, 94, 0.4);
+    }
+    .metric-glow-cyan {
+      text-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+    }
+    .metric-glow-amber {
+      text-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+    }
+    .metric-glow-emerald {
+      text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0B1120;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0ea5e9;
+    }
+
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #10B981;
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      animation: pulse 1.8s infinite cubic-bezier(0.66, 0, 0, 1);
+    }
+
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+  </style>
+</head>
+
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
+
+  <!-- Top Ambient Glow -->
+  <div class="fixed top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full blur-[128px] pointer-events-none -z-10"></div>
+  <div class="fixed top-1/3 right-10 w-96 h-96 bg-rose-500/5 rounded-full blur-[140px] pointer-events-none -z-10"></div>
+
+  <!-- Header Navigation -->
+  <header class="sticky top-0 z-40 border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-md px-4 sm:px-6 lg:px-8 py-3.5">
+    <div class="max-w-[1700px] mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      
+      <!-- Brand & Title -->
+      <div class="flex items-center space-x-3.5">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-600 via-teal-500 to-emerald-400 p-[1px] shadow-lg shadow-cyan-500/20">
+          <div class="w-full h-full bg-slate-950 rounded-xl flex items-center justify-center text-cyan-400">
+            <i class="fa-solid fa-shield-virus text-xl"></i>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <span class="text-xs uppercase font-extrabold tracking-widest text-cyan-400">Unit Kawalan Penyakit Berjangkit (CDC)</span>
+            <span class="text-slate-600">•</span>
+            <span class="inline-flex items-center text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span class="pulse-dot mr-1.5"></span> LIVE SYNDROMIC 2026
+            </span>
+          </div>
+          <h1 class="text-base sm:text-lg lg:text-xl font-black text-white tracking-tight flex items-center gap-2">
+            DASHBOARD DATA NOTIFIKASI KES PENYAKIT BERJANGKIT
+            <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700">PKD KEPONG</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Live Sync Controls -->
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <!-- Theme Toggle Button (Siang / Malam) -->
+        <button id="themeToggleBtn" onclick="toggleThemeMode()" class="px-3.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition shadow-sm" title="Tukar Mod Siang / Malam">
+          <i id="themeIcon" class="fa-solid fa-sun text-sm text-amber-400"></i>
+          <span id="themeText">Mod Siang</span>
+        </button>
+
+        <div id="dataBadge" class="text-xs font-mono px-3 py-1.5 rounded-lg bg-slate-900/90 text-slate-400 border border-slate-800 flex items-center gap-2">
+          <i class="fa-solid fa-database text-cyan-400 text-xs"></i>
+          <span id="dataStatus">Memuatkan data...</span>
+        </div>
+
+        <button id="refreshBtn" onclick="fetchAndInitData()" class="px-3.5 py-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 text-xs font-semibold flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-arrows-rotate"></i>
+          <span>Kemaskini</span>
+        </button>
+
+        <button onclick="resetFilters()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium transition">
+          <i class="fa-solid fa-filter-circle-xmark mr-1"></i> Reset Penapis
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-[1700px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+    <!-- Epidemiological Alert Banner -->
+    <div id="alertBanner" class="p-4 rounded-xl border border-amber-500/20 bg-amber-500/10 text-amber-300 flex items-start gap-3 hidden transition-all">
+      <i class="fa-solid fa-triangle-exclamation text-xl mt-0.5 text-amber-400"></i>
+      <div class="text-xs sm:text-sm">
+        <strong class="font-bold">Amaran Epidemiologi Pantas:</strong>
+        <span id="alertMessage">Dikesan kes yang masih belum diambil tindakan atau memerlukan siasatan segera dalam minggu semasa.</span>
+      </div>
+    </div>
+
+    <!-- Filter Bar Component -->
+    <section class="glass-card rounded-2xl p-4 sm:p-5 border border-slate-800">
+      <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800/80">
+        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-300">
+          <i class="fa-solid fa-sliders text-cyan-400"></i>
+          <span>Pusat Penapisan Data Bersepadu (Epidemiology Filters)</span>
+        </div>
+        <div class="text-xs text-slate-400">
+          Paparan: <span id="filteredCount" class="font-bold text-cyan-400 font-mono">0</span> rekod aktif
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <!-- Diagnosis Filter -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Diagnosis</label>
+          <select id="filterDiagnosis" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Semua Diagnos</option>
+          </select>
+        </div>
+
+        <!-- Minggu Epid Filter -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Minggu Epid (ME)</label>
+          <select id="filterEpidWeek" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Semua Minggu Epid</option>
+          </select>
+        </div>
+
+        <!-- Status Tindakan / Status Notifikasi -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Status Notifikasi</label>
+          <select id="filterStatus" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Semua Status Notifikasi</option>
+            <option value="BELUM_TINDAKAN">Belum Ambil Tindakan</option>
+            <option value="DAFTAR">Daftar Notifikasi + Daftar Kes</option>
+            <option value="ABAI">Abai Notifikasi</option>
+          </select>
+        </div>
+
+        <!-- Jantina -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Jantina</label>
+          <select id="filterGender" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Semua Jantina</option>
+          </select>
+        </div>
+
+        <!-- Bangsa -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Bangsa / Etnik</label>
+          <select id="filterRace" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Semua Bangsa</option>
+          </select>
+        </div>
+
+        <!-- Pusat Perubatan / Notifier -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Pusat Perubatan</label>
+          <select id="filterHospital" onchange="applyFilters()" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-500">
+            <option value="ALL">Semua Pusat Perubatan</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- KEY EPIDEMIOLOGICAL KPI CARDS (2026 Style) -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- KPI 1: Jumlah Kes Keseluruhan -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-l-cyan-500 relative overflow-hidden group">
+        <div class="absolute -right-4 -bottom-4 text-cyan-500/10 text-7xl font-bold group-hover:scale-110 transition-transform">
+          <i class="fa-solid fa-users-viewfinder"></i>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <span>Jumlah Notifikasi Kes</span>
+          <span class="p-1.5 rounded-lg bg-cyan-500/10 text-cyan-400"><i class="fa-solid fa-layer-group"></i></span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="metricTotalCases" class="text-3xl sm:text-4xl font-extrabold text-white font-mono metric-glow-cyan">0</span>
+          <span class="text-xs text-cyan-400/80 font-medium">Kes Terkumpul</span>
+        </div>
+        <p class="mt-2 text-[11px] text-slate-400">Keseluruhan jumlah notifikasi (STATUS NOTIFIKASI).</p>
+      </div>
+
+      <!-- KPI 2: Kes Belum Diambil Tindakan -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-l-amber-500 relative overflow-hidden group">
+        <div class="absolute -right-4 -bottom-4 text-amber-500/10 text-7xl font-bold group-hover:scale-110 transition-transform">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <span>Belum Ambil Tindakan</span>
+          <span class="p-1.5 rounded-lg bg-amber-500/10 text-amber-400"><i class="fa-solid fa-hourglass-half"></i></span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="metricPendingCases" class="text-3xl sm:text-4xl font-extrabold text-amber-400 font-mono metric-glow-amber">0</span>
+          <span id="metricPendingPercent" class="text-xs text-amber-300 font-semibold px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">0%</span>
+        </div>
+        <p class="mt-2 text-[11px] text-slate-400">Padanan tepat "Belum Ambil Tindakan" dalam STATUS NOTIFIKASI.</p>
+      </div>
+
+      <!-- KPI 3: Kes Abai -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-l-rose-500 relative overflow-hidden group">
+        <div class="absolute -right-4 -bottom-4 text-rose-500/10 text-7xl font-bold group-hover:scale-110 transition-transform">
+          <i class="fa-solid fa-ban"></i>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <span>Abai Notifikasi</span>
+          <span class="p-1.5 rounded-lg bg-rose-500/10 text-rose-400"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-2">
+          <span id="metricIgnoredCases" class="text-3xl sm:text-4xl font-extrabold text-rose-400 font-mono metric-glow-rose">0</span>
+          <span id="metricIgnoredPercent" class="text-xs text-rose-300 font-semibold px-1.5 py-0.5 rounded bg-rose-500/10 border border-rose-500/20">0%</span>
+        </div>
+        <p class="mt-2 text-[11px] text-slate-400">Padanan tepat "Abai Notifikasi" dalam STATUS NOTIFIKASI.</p>
+      </div>
+
+      <!-- KPI 4: Jumlah Variasi Diagnosis & Fasiliti -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-l-emerald-500 relative overflow-hidden group">
+        <div class="absolute -right-4 -bottom-4 text-emerald-500/10 text-7xl font-bold group-hover:scale-110 transition-transform">
+          <i class="fa-solid fa-stethoscope"></i>
+        </div>
+        <div class="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider">
+          <span>Diagnosis & Fasiliti</span>
+          <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400"><i class="fa-solid fa-hospital"></i></span>
+        </div>
+        <div class="mt-3 flex items-baseline gap-3">
+          <div>
+            <span id="metricDiagCount" class="text-3xl sm:text-4xl font-extrabold text-emerald-400 font-mono metric-glow-emerald">0</span>
+            <span class="text-[11px] text-slate-400 block font-medium">Jenis Penyakit</span>
+          </div>
+          <div class="border-l border-slate-700 pl-3">
+            <span id="metricHospCount" class="text-2xl font-bold text-slate-200 font-mono">0</span>
+            <span class="text-[11px] text-slate-400 block font-medium">Pusat Merawat</span>
+          </div>
+        </div>
+        <p class="mt-2 text-[11px] text-slate-400">Spektrum survelan aktif daerah Kepong.</p>
+      </div>
+
+    </section>
+
+    <!-- EPIDEMIOLOGICAL TIME-SERIES CHARTS (Minggu Epid) -->
+    <section class="grid grid-cols-1 gap-6">
+      
+      <!-- Trend Mingguan Epid Utama (Full width) -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-line text-cyan-400"></i>
+              Keluk Epidemik (Epidemic Curve): Tren Mingguan Kes Penyakit
+            </h2>
+            <p class="text-xs text-slate-400">Bilangan kes mengikut Minggu Epidemiologi (ME) dengan penanda purata survelan.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-mono">
+              <i class="fa-solid fa-calendar-check text-cyan-400"></i> Agregat Minggu Epid
+            </span>
+          </div>
+        </div>
+        <div class="w-full h-80 sm:h-96 relative">
+          <canvas id="chartEpidWeek"></canvas>
+        </div>
+      </div>
+
+      <!-- Perbandingan Minggu Epid Mengikut Semua Diagnosis (Diletakkan di bawah keluk epidemik untuk paparan lebih luas) -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col justify-between border border-purple-500/20">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-chart-area text-purple-400"></i>
+              Notifikasi Diterima Mengikut Diagnosis
+            </h2>
+            <p class="text-xs text-slate-400">Trajektori mingguan kes merangkumi semua diagnosis penyakit untuk pemantauan menyeluruh (Hover untuk butiran lengkap).</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-mono">
+              <i class="fa-solid fa-layer-group text-purple-400"></i> Multi-Diagnosis ME
+            </span>
+          </div>
+        </div>
+        <div class="w-full h-80 sm:h-96 relative">
+          <canvas id="chartEpidComparison"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- SECTION TAMBAHAN: KELUK EPIDEMIK DAFTAR NOTIFIKASI + DAFTAR KES (SEMUA PENYAKIT) -->
+    <section class="grid grid-cols-1 gap-6">
+      <div class="glass-card rounded-2xl p-5 border border-emerald-500/20 relative overflow-hidden">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <i class="fa-solid fa-circle-check mr-1.5"></i> Status Sah: Daftar Notifikasi + Daftar Kes
+              </span>
+            </div>
+            <h2 class="text-sm sm:text-base font-bold text-white flex items-center gap-2 mt-1">
+              <i class="fa-solid fa-chart-line text-emerald-400"></i>
+              Keluk Epidemik Mengikut Diagnosis: Daftar Notifikasi + Daftar Kes
+            </h2>
+            <p class="text-xs text-slate-400">Perbandingan trajektori mingguan kes yang disahkan (Daftar Notifikasi & Daftar Kes) bagi semua diagnosis penyakit.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded bg-slate-800 text-slate-300 font-mono">
+              <i class="fa-solid fa-shield-virus text-emerald-400"></i> Tapisan: Daftar Sah Sahaja
+            </span>
+          </div>
+        </div>
+        <div class="w-full h-80 sm:h-96 relative">
+          <canvas id="chartRegisteredEpidWeek"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- BREAKDOWN GRAPHS SECTION (Diagnosis, Status Kes, Demografi) -->
+    <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- Chart: Pecahan Mengikut Diagnosis -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-virus-covid text-rose-400"></i>
+            Pecahan Diagnosis Penyakit
+          </h3>
+          <span class="text-[10px] text-slate-400 uppercase tracking-wider">Top Diagnos</span>
+        </div>
+        <div class="w-full h-64 relative flex-1">
+          <canvas id="chartDiagnosis"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart: Status Tindakan / Siasatan Kes -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-clipboard-check text-amber-400"></i>
+            Pecahan Status Notifikasi
+          </h3>
+          <span class="text-[10px] text-slate-400 uppercase tracking-wider">STATUS NOTIFIKASI</span>
+        </div>
+        <div class="w-full h-64 relative flex-1">
+          <canvas id="chartCaseStatus"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart: Demografi Kategori Umur -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-person-cane text-emerald-400"></i>
+            Kategori Umur Pesakit
+          </h3>
+          <span class="text-[10px] text-slate-400 uppercase tracking-wider">Taburan Umur</span>
+        </div>
+        <div class="w-full h-64 relative flex-1">
+          <canvas id="chartAgeGroup"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart: Taburan Jantina -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-venus-mars text-blue-400"></i>
+            Pecahan Jantina Pesakit
+          </h3>
+          <span class="text-[10px] text-slate-400 uppercase tracking-wider">Demografi</span>
+        </div>
+        <div class="w-full h-64 relative flex-1">
+          <canvas id="chartGender"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart: Bangsa / Etnik -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-people-group text-yellow-400"></i>
+            Taburan Bangsa / Keturunan
+          </h3>
+          <span class="text-[10px] text-slate-400 uppercase tracking-wider">Kependudukan</span>
+        </div>
+        <div class="w-full h-64 relative flex-1">
+          <canvas id="chartRace"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart: Fasiliti / Pusat Perubatan Notifikasi Teratas -->
+      <div class="glass-card rounded-2xl p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+            <i class="fa-solid fa-square-h text-teal-400"></i>
+            Pusat Perubatan Tertinggi Notifikasi
+          </h3>
+          <span class="text-[10px] text-slate-400 uppercase tracking-wider">Top 7 Fasiliti</span>
+        </div>
+        <div class="w-full h-64 relative flex-1">
+          <canvas id="chartHospital"></canvas>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- EPIDEMIOLOGICAL LINELIST & DRILL-DOWN TABLE -->
+    <section class="glass-card rounded-2xl overflow-hidden border border-slate-800">
+      <div class="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-800/80">
+        <div>
+          <h2 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-cyan-400"></i>
+            Senarai Notifikasi Kes (Line Listing Interaktif)
+          </h2>
+          <p class="text-xs text-slate-400">Paparan terperinci data mentah berpusat untuk tindakan survelan & audit klinikal.</p>
+        </div>
+        
+        <!-- Table Search & Export -->
+        <div class="flex items-center gap-2">
+          <div class="relative">
+            <input type="text" id="tableSearch" onkeyup="filterTableSearch()" placeholder="Cari nama, ID, fasiliti..." 
+              class="bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-48 sm:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+          </div>
+          <button onclick="exportCurrentViewCSV()" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-file-arrow-down text-emerald-400"></i> Eksport
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto max-h-96">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-900/90 text-slate-400 uppercase text-[10px] tracking-wider sticky top-0 backdrop-blur-md z-10">
+            <tr>
+              <th class="py-3 px-4 font-semibold">Bil</th>
+              <th class="py-3 px-4 font-semibold">ME</th>
+              <th class="py-3 px-4 font-semibold">DIAGNOSIS</th>
+              <th class="py-3 px-4 font-semibold">Jantina</th>
+              <th class="py-3 px-4 font-semibold">Umur</th>
+              <th class="py-3 px-4 font-semibold">Bangsa</th>
+              <th class="py-3 px-4 font-semibold">Pusat Perubatan / Notifier</th>
+              <th class="py-3 px-4 font-semibold">Status Kes</th>
+              <th class="py-3 px-4 font-semibold">STATUS NOTIFIKASI</th>
+            </tr>
+          </thead>
+          <tbody id="lineListBody" class="divide-y divide-slate-800/60 font-normal text-slate-300">
+            <!-- Populated dynamically via JS -->
+            <tr>
+              <td colspan="9" class="text-center py-8 text-slate-500">
+                <i class="fa-solid fa-spinner fa-spin text-lg mb-2"></i><br>
+                Memuatkan senarai data notifikasi...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="p-3 bg-slate-900/50 border-t border-slate-800 text-[11px] text-slate-400 flex items-center justify-between">
+        <span id="tablePaginationInfo">Menunjukkan 0 hingga 0 daripada 0 entri</span>
+        <span class="font-mono text-cyan-400">Unit ID & Survelan PKD Kepong</span>
+      </div>
+    </section>
+
+    <!-- FOOTER / AUDIT INFO -->
+    <footer class="pt-4 pb-8 border-t border-slate-900 text-center text-xs text-slate-500 space-y-1">
+      <p class="font-medium">Hak Cipta Terpelihara &copy; 2026 Pejabat Kesihatan Kepong • Bahagian Kesihatan Awam & Kawalan Penyakit</p>
+      <p class="text-[11px] text-slate-600 font-mono">Platform Survelan Pintar Integrasi Data e-Notifikasi • Sistem Pemantauan Masa Nyata 2026</p>
+    </footer>
+
+  </main>
+
+  <!-- JAVASCRIPT: LOGIK ANALITIK EPIDEMIOLOGI & VISUALISASI -->
+  <script>
+    const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQLqWtLF2JKa_FJwYMGJ3-QO6RbwR4FCX3tU7u6C6lq6eaOcM69JQOMysKhGGkv_clo1bDyxjkq1gk_/pub?gid=0&single=true&output=csv";
+
+    // Global Dataset Storage
+    let rawDataset = [];
+    let filteredDataset = [];
+
+    // Current Theme State (dark / light)
+    let currentTheme = 'dark';
+
+    // Chart Instances Map
+    const chartInstances = {};
+
+    // Standardized Color Palette (Moden 2026 Futuristic Medical)
+    const CHART_PALETTE = [
+      '#38BDF8', // Sky Cyan
+      '#F43F5E', // Rose
+      '#10B981', // Emerald
+      '#A855F7', // Purple
+      '#F59E0B', // Amber
+      '#06B6D4', // Deep Cyan
+      '#EC4899', // Pink
+      '#6366F1', // Indigo
+      '#84CC16', // Lime
+      '#94A3B8'  // Slate
+    ];
+
+    // Set Default Chart.js Dark Options
+    Chart.defaults.color = '#94a3b8';
+    Chart.defaults.font.family = '"Plus Jakarta Sans", sans-serif';
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
+    Chart.defaults.plugins.legend.labels.boxWidth = 8;
+    Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.9)';
+    Chart.defaults.plugins.tooltip.borderColor = 'rgba(56, 189, 248, 0.2)';
+    Chart.defaults.plugins.tooltip.borderWidth = 1;
+    Chart.defaults.plugins.tooltip.cornerRadius = 8;
+    Chart.defaults.plugins.tooltip.padding = 10;
+    // Nyahaktifkan plugin datalabels secara global supaya ia hanya aktif pada graf yang dikehendaki
+    Chart.defaults.plugins.datalabels = { display: false };
+
+    function destroyChart(name) {
+      if (chartInstances[name]) {
+        chartInstances[name].destroy();
+        delete chartInstances[name];
+      }
+    }
+
+    /**
+     * Togol Tema Mod Siang / Mod Malam
+     */
+    function toggleThemeMode() {
+      const body = document.body;
+      const themeIcon = document.getElementById('themeIcon');
+      const themeText = document.getElementById('themeText');
+      const themeBtn = document.getElementById('themeToggleBtn');
+
+      if (currentTheme === 'dark') {
+        currentTheme = 'light';
+        body.classList.add('light-mode');
+        if (themeIcon) {
+          themeIcon.className = 'fa-solid fa-moon text-sm text-indigo-500';
+        }
+        if (themeText) themeText.textContent = 'Mod Malam';
+        if (themeBtn) {
+          themeBtn.className = 'px-3.5 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold flex items-center gap-1.5 transition shadow-sm';
+        }
+        
+        // Kemas kini palet warna asas Chart.js untuk mod siang
+        Chart.defaults.color = '#334155';
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.95)';
+      } else {
+        currentTheme = 'dark';
+        body.classList.remove('light-mode');
+        if (themeIcon) {
+          themeIcon.className = 'fa-solid fa-sun text-sm text-amber-400';
+        }
+        if (themeText) themeText.textContent = 'Mod Siang';
+        if (themeBtn) {
+          themeBtn.className = 'px-3.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-semibold flex items-center gap-1.5 transition shadow-sm';
+        }
+
+        // Kemas kini palet warna asas Chart.js untuk mod malam
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.plugins.tooltip.backgroundColor = 'rgba(15, 23, 42, 0.9)';
+      }
+
+      // Lukis semula semua carta dan jadual agar warna teks dan grid serasi dengan tema semasa
+      renderAllCharts();
+      renderLineListing();
+      showToast(`Beralih kepada ${currentTheme === 'light' ? 'Mod Siang' : 'Mod Malam'}.`);
+    }
+
+    /**
+     * Memuat turun dan mengekstrak data CSV dari Google Sheets (dengan fallback proksi CORS)
+     */
+    async function fetchAndInitData() {
+      const statusEl = document.getElementById('dataStatus');
+      const refreshBtn = document.getElementById('refreshBtn');
+
+      if (statusEl) statusEl.textContent = 'Menghubung & memuat turun CSV...';
+      if (refreshBtn) refreshBtn.classList.add('opacity-50', 'pointer-events-none');
+
+      const urls = [
+        DATA_URL,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(DATA_URL)}`,
+        `https://corsproxy.io/?${encodeURIComponent(DATA_URL)}`
+      ];
+
+      let csvText = null;
+
+      for (const url of urls) {
+        try {
+          const resp = await fetch(url);
+          if (resp.ok) {
+            const text = await resp.text();
+            if (text && text.length > 50 && (text.includes(',') || text.includes('\t'))) {
+              csvText = text;
+              break;
+            }
+          }
+        } catch (e) {
+          console.warn('Gagal dengan endpoint:', url, e);
+        }
+      }
+
+      if (!csvText) {
+        if (statusEl) statusEl.innerHTML = '<span class="text-rose-400">Ralat: Gagal memuat turun data</span>';
+        if (refreshBtn) refreshBtn.classList.remove('opacity-50', 'pointer-events-none');
+        showToast('Tidak dapat memuat turun fail CSV dari pautan. Sila periksa sambungan internet.');
+        return;
+      }
+
+      Papa.parse(csvText, {
+        header: true,
+        skipEmptyLines: 'greedy',
+        complete: function(results) {
+          processRawData(results.data);
+          if (statusEl) statusEl.innerHTML = `<span class="text-emerald-400"><i class="fa-solid fa-circle-check"></i> ${rawDataset.length} kes dimuat</span>`;
+          if (refreshBtn) refreshBtn.classList.remove('opacity-50', 'pointer-events-none');
+          showToast(`Berjaya memuatkan ${rawDataset.length} rekod data.`);
+        },
+        error: function(err) {
+          console.error('PapaParse error:', err);
+          if (statusEl) statusEl.innerHTML = '<span class="text-rose-400">Ralat memproses CSV</span>';
+          if (refreshBtn) refreshBtn.classList.remove('opacity-50', 'pointer-events-none');
+        }
+      });
+    }
+
+    /**
+     * Menormalkan dan membersihkan data mengikut skema e-Notifikasi
+     */
+    function processRawData(dataRows) {
+      if (!dataRows || !dataRows.length) return;
+
+      const keys = Object.keys(dataRows[0] || {});
+      const findKey = (candidates) => {
+        return keys.find(k => {
+          const cleanK = k.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+          return candidates.some(c => cleanK.includes(c.toUpperCase().replace(/[^A-Z0-9]/g, '')));
+        }) || null;
+      };
+
+      const keyStatusNotif = findKey(['STATUS NOTIFIKASI', 'STATUS NOTIFKASI', 'STATUSNOTIFIKASI', 'STATUSNOTIFKASI']) || 'STATUS NOTIFIKASI';
+      const keyDiagnosis = findKey(['DIAGNOSIS', 'DIAGNOS']) || 'DIAGNOSIS';
+      const keyME = findKey(['MINGGU EPID', 'MINGGUEPID', 'ME', 'EPID WEEK', 'EPIDWEEK']) || 'MINGGU EPID';
+      const keyGender = findKey(['JANTINA', 'GENDER', 'SEX']) || 'JANTINA';
+      const keyAge = findKey(['UMUR', 'AGE', 'KATEGORI UMUR', 'KUMPULAN UMUR']) || 'UMUR';
+      const keyRace = findKey(['BANGSA', 'KETURUNAN', 'ETNIK', 'RACE']) || 'BANGSA';
+      const keyHosp = findKey(['PUSAT PERUBATAN', 'HOSPITAL', 'KLINIK', 'NOTIFIER', 'FASILITI', 'TEMPAT NOTIFIKASI']) || 'PUSAT PERUBATAN';
+      const keyCaseStatus = findKey(['STATUS KES', 'STATUSKES', 'STATUS']) || 'STATUS KES';
+
+      rawDataset = dataRows.map((row, index) => {
+        const rawStatus = (row[keyStatusNotif] || '').toString().trim();
+        const rawStatusUpper = rawStatus.toUpperCase();
+
+        let actionCategory = 'LAIN-LAIN';
+        if (rawStatusUpper.includes('BELUM AMBIL TINDAKAN') || rawStatusUpper.includes('BELUM TINDAKAN')) {
+          actionCategory = 'BELUM_TINDAKAN';
+        } else if (rawStatusUpper.includes('ABAI NOTIFIKASI') || rawStatusUpper.includes('ABAI')) {
+          actionCategory = 'ABAI';
+        } else if (rawStatusUpper.includes('DAFTAR NOTIFIKASI') || rawStatusUpper.includes('DAFTAR KES') || rawStatusUpper.includes('DAFTAR')) {
+          actionCategory = 'DAFTAR';
+        }
+
+        const rawMe = (row[keyME] || '').toString().trim();
+        let formattedME = rawMe;
+        if (rawMe) {
+          const matchNum = rawMe.match(/\d+/);
+          formattedME = matchNum ? `ME ${matchNum[0]}` : rawMe;
+        } else {
+          formattedME = 'ME N/A';
+        }
+
+        const rawAgeVal = (row[keyAge] || '').toString().trim();
+        let ageGroup = 'Tidak Dinyatakan';
+        const numAge = parseFloat(rawAgeVal);
+        if (!isNaN(numAge)) {
+          if (numAge <= 2) ageGroup = '0-2';
+          else if (numAge <= 9) ageGroup = '3-9';
+          else if (numAge <= 19) ageGroup = '10-19';
+          else if (numAge <= 29) ageGroup = '20-29';
+          else if (numAge <= 39) ageGroup = '30-39';
+          else if (numAge <= 49) ageGroup = '40-49';
+          else if (numAge <= 59) ageGroup = '50-59';
+          else ageGroup = '60 keatas';
+        } else if (rawAgeVal) {
+          ageGroup = rawAgeVal;
+        }
+
+        let genderVal = (row[keyGender] || '').toString().trim().toUpperCase();
+        if (genderVal.startsWith('L') || genderVal === 'MALE') genderVal = 'LELAKI';
+        else if (genderVal.startsWith('P') || genderVal === 'FEMALE') genderVal = 'PEREMPUAN';
+        else genderVal = genderVal || 'TIDAK DINYATAKAN';
+
+        let raceVal = (row[keyRace] || '').toString().trim().toUpperCase();
+        if (!raceVal) raceVal = 'LAIN-LAIN';
+
+        return {
+          id: index + 1,
+          me: formattedME,
+          diagnosis: (row[keyDiagnosis] || 'TIDAK DINYATAKAN').toString().trim().toUpperCase(),
+          rawNotificationStatus: rawStatus,
+          actionCategory: actionCategory,
+          gender: genderVal,
+          rawAge: rawAgeVal,
+          ageGroup: ageGroup,
+          race: raceVal,
+          hospital: (row[keyHosp] || 'TIDAK DINYATAKAN').toString().trim().toUpperCase(),
+          caseStatus: (row[keyCaseStatus] || 'N/A').toString().trim()
+        };
+      }).filter(r => r.diagnosis && r.diagnosis !== 'TIDAK DINYATAKAN' || r.rawNotificationStatus);
+
+      filteredDataset = [...rawDataset];
+      populateFilterOptions();
+      applyFilters();
+    }
+
+    /**
+     * Membina pilihan penapis berasaskan data unik yang wujud
+     */
+    function populateFilterOptions() {
+      const diagSelect = document.getElementById('filterDiagnosis');
+      const meSelect = document.getElementById('filterEpidWeek');
+      const genderSelect = document.getElementById('filterGender');
+      const raceSelect = document.getElementById('filterRace');
+      const hospSelect = document.getElementById('filterHospital');
+
+      const uniqueDiags = [...new Set(rawDataset.map(d => d.diagnosis))].filter(Boolean).sort();
+      const uniqueWeeks = [...new Set(rawDataset.map(d => d.me))].filter(Boolean).sort((a,b) => {
+        const numA = parseInt(a.replace(/\D/g, '') || 0, 10);
+        const numB = parseInt(b.replace(/\D/g, '') || 0, 10);
+        return numA - numB;
+      });
+      const uniqueGenders = [...new Set(rawDataset.map(d => d.gender))].filter(Boolean).sort();
+      const uniqueRaces = [...new Set(rawDataset.map(d => d.race))].filter(Boolean).sort();
+      const uniqueHosps = [...new Set(rawDataset.map(d => d.hospital))].filter(Boolean).sort();
+
+      diagSelect.innerHTML = '<option value="ALL">Semua Diagnos</option>' + uniqueDiags.map(v => `<option value="${v}">${v}</option>`).join('');
+      meSelect.innerHTML = '<option value="ALL">Semua Minggu Epid</option>' + uniqueWeeks.map(v => `<option value="${v}">${v}</option>`).join('');
+      genderSelect.innerHTML = '<option value="ALL">Semua Jantina</option>' + uniqueGenders.map(v => `<option value="${v}">${v}</option>`).join('');
+      raceSelect.innerHTML = '<option value="ALL">Semua Bangsa</option>' + uniqueRaces.map(v => `<option value="${v}">${v}</option>`).join('');
+      hospSelect.innerHTML = '<option value="ALL">Semua Pusat Perubatan</option>' + uniqueHosps.map(v => `<option value="${v}">${v}</option>`).join('');
+    }
+
+    /**
+     * Melaksanakan tapisan kriteria
+     */
+    function applyFilters() {
+      const diagVal = document.getElementById('filterDiagnosis')?.value || 'ALL';
+      const meVal = document.getElementById('filterEpidWeek')?.value || 'ALL';
+      const statusVal = document.getElementById('filterStatus')?.value || 'ALL';
+      const genderVal = document.getElementById('filterGender')?.value || 'ALL';
+      const raceVal = document.getElementById('filterRace')?.value || 'ALL';
+      const hospVal = document.getElementById('filterHospital')?.value || 'ALL';
+
+      filteredDataset = rawDataset.filter(item => {
+        if (diagVal !== 'ALL' && item.diagnosis !== diagVal) return false;
+        if (meVal !== 'ALL' && item.me !== meVal) return false;
+        if (statusVal !== 'ALL' && item.actionCategory !== statusVal) return false;
+        if (genderVal !== 'ALL' && item.gender !== genderVal) return false;
+        if (raceVal !== 'ALL' && item.race !== raceVal) return false;
+        if (hospVal !== 'ALL' && item.hospital !== hospVal) return false;
+        return true;
+      });
+
+      document.getElementById('filteredCount').textContent = filteredDataset.length.toLocaleString();
+
+      updateMetrics();
+      renderAllCharts();
+      renderLineListing();
+    }
+
+    function resetFilters() {
+      ['filterDiagnosis', 'filterEpidWeek', 'filterStatus', 'filterGender', 'filterRace', 'filterHospital'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = 'ALL';
+      });
+      const searchBox = document.getElementById('tableSearch');
+      if (searchBox) searchBox.value = '';
+      applyFilters();
+    }
+
+    /**
+     * Mengira dan memaparkan KPI
+     */
+    function updateMetrics() {
+      const total = filteredDataset.length;
+      let pending = 0;
+      let ignored = 0;
+      const diagSet = new Set();
+      const hospSet = new Set();
+
+      filteredDataset.forEach(d => {
+        if (d.actionCategory === 'BELUM_TINDAKAN') pending++;
+        if (d.actionCategory === 'ABAI') ignored++;
+        if (d.diagnosis) diagSet.add(d.diagnosis);
+        if (d.hospital) hospSet.add(d.hospital);
+      });
+
+      document.getElementById('metricTotalCases').textContent = total.toLocaleString();
+      document.getElementById('metricPendingCases').textContent = pending.toLocaleString();
+      document.getElementById('metricIgnoredCases').textContent = ignored.toLocaleString();
+      document.getElementById('metricDiagCount').textContent = diagSet.size.toLocaleString();
+      document.getElementById('metricHospCount').textContent = hospSet.size.toLocaleString();
+
+      const pendingPct = total > 0 ? ((pending / total) * 100).toFixed(1) : '0';
+      const ignoredPct = total > 0 ? ((ignored / total) * 100).toFixed(1) : '0';
+
+      document.getElementById('metricPendingPercent').textContent = `${pendingPct}%`;
+      document.getElementById('metricIgnoredPercent').textContent = `${ignoredPct}%`;
+
+      const alertBanner = document.getElementById('alertBanner');
+      const alertMsg = document.getElementById('alertMessage');
+      if (pending > 0) {
+        alertBanner.classList.remove('hidden');
+        alertMsg.textContent = `Perhatian: Sebanyak ${pending} kes (${pendingPct}%) masih berstatus 'Belum Ambil Tindakan' dan memerlukan siasatan segera.`;
+      } else {
+        alertBanner.classList.add('hidden');
+      }
+    }
+
+    /**
+     * Memaparkan semula semua visualisasi
+     */
+    function renderAllCharts() {
+      renderEpidWeekChart();
+      renderEpidComparisonChart();
+      renderRegisteredEpidWeekChart();
+      renderDiagnosisChart();
+      renderCaseStatusChart();
+      renderAgeChart();
+      renderGenderChart();
+      renderRaceChart();
+      renderHospitalChart();
+    }
+
+    /**
+     * 1. Keluk Epidemik Umum
+     */
+    function renderEpidWeekChart() {
+      destroyChart('epidWeek');
+
+      const weekMap = {};
+      filteredDataset.forEach(d => {
+        weekMap[d.me] = (weekMap[d.me] || 0) + 1;
+      });
+
+      const sortedWeeks = Object.keys(weekMap).sort((a, b) => {
+        const numA = parseInt(a.replace(/\D/g, '') || 0, 10);
+        const numB = parseInt(b.replace(/\D/g, '') || 0, 10);
+        return numA - numB;
+      });
+
+      const counts = sortedWeeks.map(w => weekMap[w]);
+      const avg = counts.length > 0 ? (counts.reduce((a, b) => a + b, 0) / counts.length).toFixed(1) : 0;
+
+      const maxVal = counts.length > 0 ? Math.max(...counts) : 10;
+
+      const ctx = document.getElementById('chartEpidWeek').getContext('2d');
+      chartInstances['epidWeek'] = new Chart(ctx, {
+        type: 'bar',
+        plugins: [ChartDataLabels],
+        data: {
+          labels: sortedWeeks,
+          datasets: [
+            {
+              type: 'line',
+              label: `Purata Mingguan (${avg})`,
+              data: Array(sortedWeeks.length).fill(avg),
+              borderColor: '#F59E0B',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              pointRadius: 0,
+              fill: false,
+              datalabels: {
+                display: false
+              }
+            },
+            {
+              type: 'bar',
+              label: 'Jumlah Notifikasi',
+              data: counts,
+              backgroundColor: 'rgba(56, 189, 248, 0.75)',
+              borderColor: '#38BDF8',
+              borderRadius: 6,
+              borderWidth: 1,
+              datalabels: {
+                display: true,
+                align: 'top',
+                anchor: 'end',
+                offset: 2,
+                color: '#38BDF8',
+                font: {
+                  family: '"JetBrains Mono", monospace',
+                  weight: 'bold',
+                  size: 11
+                },
+                formatter: function(value) {
+                  return value > 0 ? value : '';
+                }
+              }
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: {
+              top: 20
+            }
+          },
+          plugins: {
+            legend: { position: 'top', labels: { boxWidth: 10, font: { size: 10 } } }
+          },
+          scales: {
+            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { font: { size: 10 } } },
+            y: { 
+              beginAtZero: true, 
+              suggestedMax: Math.ceil(maxVal * 1.15),
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+              ticks: { precision: 0 } 
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * 1B. Keluk Epidemik Khusus: Daftar Notifikasi + Daftar Kes Mengikut Diagnosis & Minggu Epid
+     * Menyerupai gaya graf Notifikasi Diterima Mengikut Diagnosis tetapi ditapis hanya untuk 'DAFTAR'
+     */
+    function renderRegisteredEpidWeekChart() {
+      destroyChart('registeredEpidWeek');
+
+      // 1. Tapis hanya kes berstatus "DAFTAR" (Daftar Notifikasi + Daftar Kes)
+      const registeredData = filteredDataset.filter(d => d.actionCategory === 'DAFTAR');
+
+      // 2. Dapatkan senarai diagnosis yang mempunyai kes daftar, disusun mengikut bilangan tertinggi
+      const diagCounts = {};
+      registeredData.forEach(d => {
+        diagCounts[d.diagnosis] = (diagCounts[d.diagnosis] || 0) + 1;
+      });
+      const allRegisteredDiags = Object.entries(diagCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(entry => entry[0]);
+
+      // 3. Susun Minggu Epid (ME) mengikut kronologi
+      const weekMap = {};
+      filteredDataset.forEach(d => { weekMap[d.me] = true; });
+      const sortedWeeks = Object.keys(weekMap).sort((a, b) => {
+        const numA = parseInt(a.replace(/\D/g, '') || 0, 10);
+        const numB = parseInt(b.replace(/\D/g, '') || 0, 10);
+        return numA - numB;
+      });
+
+      // Palet warna kontras moden bagi membezakan garisan setiap diagnosis
+      const lineColors = [
+        '#10B981', // Emerald
+        '#38BDF8', // Cyan
+        '#F59E0B', // Amber
+        '#A855F7', // Purple
+        '#F43F5E', // Rose
+        '#06B6D4', // Deep Cyan
+        '#EC4899', // Pink
+        '#84CC16', // Lime
+        '#6366F1', // Indigo
+        '#EAB308', // Yellow
+        '#14B8A6', // Teal
+        '#FB7185', // Soft Rose
+        '#818CF8', // Soft Indigo
+        '#2DD4BF', // Mint
+        '#F97316'  // Orange
+      ];
+
+      // 4. Bina siri dataset bagi setiap diagnosis
+      const datasets = allRegisteredDiags.map((diag, idx) => {
+        const dataArr = sortedWeeks.map(w => {
+          return registeredData.filter(d => d.me === w && d.diagnosis === diag).length;
+        });
+
+        const color = lineColors[idx % lineColors.length];
+
+        return {
+          label: `${diag} (${diagCounts[diag]})`,
+          data: dataArr,
+          borderColor: color,
+          backgroundColor: color + '15',
+          fill: false,
+          tension: 0.35,
+          borderWidth: 2,
+          pointRadius: 3,
+          pointHoverRadius: 6
+        };
+      });
+
+      const ctx = document.getElementById('chartRegisteredEpidWeek').getContext('2d');
+      chartInstances['registeredEpidWeek'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: sortedWeeks,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 8,
+                font: { size: 9.5 },
+                padding: 8
+              }
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              callbacks: {
+                title: function(tooltipItems) {
+                  return `${tooltipItems[0].label} (Daftar Sah)`;
+                }
+              }
+            }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          },
+          scales: {
+            x: { 
+              grid: { color: currentTheme === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)' }, 
+              ticks: { color: currentTheme === 'light' ? '#334155' : '#94a3b8', font: { size: 10 } } 
+            },
+            y: { 
+              beginAtZero: true, 
+              grid: { color: currentTheme === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)' }, 
+              ticks: { color: currentTheme === 'light' ? '#334155' : '#94a3b8', precision: 0 } 
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * 2. Notifikasi Diterima Mengikut Diagnosis (Semua Diagnosis Penyakit)
+     */
+    function renderEpidComparisonChart() {
+      destroyChart('epidComparison');
+
+      // Ambil SEMUA diagnosis tanpa sebarang had slice
+      const diagCounts = {};
+      filteredDataset.forEach(d => {
+        diagCounts[d.diagnosis] = (diagCounts[d.diagnosis] || 0) + 1;
+      });
+      const allDiags = Object.entries(diagCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(entry => entry[0]);
+
+      // Ambil minggu epid yang unik & teratur
+      const weekMap = {};
+      filteredDataset.forEach(d => { weekMap[d.me] = true; });
+      const sortedWeeks = Object.keys(weekMap).sort((a, b) => {
+        const numA = parseInt(a.replace(/\D/g, '') || 0, 10);
+        const numB = parseInt(b.replace(/\D/g, '') || 0, 10);
+        return numA - numB;
+      });
+
+      // Palet warna dinamik yang diperluaskan untuk menampung pelbagai jenis diagnosis
+      const extendedColors = [
+        '#38BDF8', '#F43F5E', '#10B981', '#A855F7', '#F59E0B', 
+        '#EC4899', '#06B6D4', '#84CC16', '#6366F1', '#EAB308',
+        '#14B8A6', '#FB7185', '#818CF8', '#2DD4BF', '#F97316'
+      ];
+
+      const datasets = allDiags.map((diag, idx) => {
+        const dataArr = sortedWeeks.map(w => {
+          return filteredDataset.filter(d => d.me === w && d.diagnosis === diag).length;
+        });
+
+        const color = extendedColors[idx % extendedColors.length];
+
+        return {
+          label: diag,
+          data: dataArr,
+          borderColor: color,
+          backgroundColor: color + '18',
+          fill: false,
+          tension: 0.35,
+          borderWidth: 2,
+          pointRadius: 2.5
+        };
+      });
+
+      const ctx = document.getElementById('chartEpidComparison').getContext('2d');
+      chartInstances['epidComparison'] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: sortedWeeks,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { 
+              position: 'top', 
+              labels: { 
+                boxWidth: 8, 
+                font: { size: 9.5 },
+                padding: 6
+              } 
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+              itemSort: (a, b) => b.raw - a.raw,
+              callbacks: {
+                title: function(tooltipItems) {
+                  return `${tooltipItems[0].label} • Notifikasi Mengikut Diagnosis`;
+                },
+                label: function(context) {
+                  if (context.raw === 0) return null; // Sembunyi diagnosis bernilai 0 untuk paparan tooltip yang kemas
+                  return ` ${context.dataset.label}: ${context.raw} kes`;
+                }
+              }
+            }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          },
+          scales: {
+            x: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
+            y: { beginAtZero: true, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { precision: 0 } }
+          }
+        }
+      });
+    }
+
+    /**
+     * 3. Pecahan Diagnosis Utama
+     */
+    function renderDiagnosisChart() {
+      destroyChart('diagnosis');
+
+      const counts = {};
+      filteredDataset.forEach(d => {
+        counts[d.diagnosis] = (counts[d.diagnosis] || 0) + 1;
+      });
+
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      const totalSum = sorted.reduce((sum, item) => sum + item[1], 0);
+
+      const ctx = document.getElementById('chartDiagnosis').getContext('2d');
+      chartInstances['diagnosis'] = new Chart(ctx, {
+        type: 'doughnut',
+        plugins: [ChartDataLabels],
+        data: {
+          labels: sorted.map(s => s[0]),
+          datasets: [{
+            data: sorted.map(s => s[1]),
+            backgroundColor: CHART_PALETTE,
+            borderColor: '#111C33',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '52%',
+          layout: {
+            padding: 10
+          },
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 8, font: { size: 9.5 } } },
+            datalabels: {
+              display: function(context) {
+                const val = context.dataset.data[context.dataIndex];
+                const pct = totalSum > 0 ? (val / totalSum) * 100 : 0;
+                return pct >= 4; // Papar jika menyumbang 4% ke atas bagi mengelakkan pertindihan
+              },
+              color: '#FFFFFF',
+              font: {
+                family: '"JetBrains Mono", monospace',
+                weight: 'bold',
+                size: 9.5
+              },
+              formatter: function(value) {
+                const pct = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
+                return `${value}\n(${pct}%)`;
+              },
+              textAlign: 'center'
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * 4. Status Tindakan / Status Kes (Berdasarkan STATUS NOTIFIKASI)
+     */
+    function renderCaseStatusChart() {
+      destroyChart('caseStatus');
+
+      const counts = {
+        'Belum Ambil Tindakan': 0,
+        'Daftar Notifikasi + Daftar Kes': 0,
+        'Abai Notifikasi': 0
+      };
+
+      filteredDataset.forEach(d => {
+        if (d.actionCategory === 'BELUM_TINDAKAN') {
+          counts['Belum Ambil Tindakan']++;
+        } else if (d.actionCategory === 'DAFTAR') {
+          counts['Daftar Notifikasi + Daftar Kes']++;
+        } else if (d.actionCategory === 'ABAI') {
+          counts['Abai Notifikasi']++;
+        }
+      });
+
+      const totalSum = Object.values(counts).reduce((a, b) => a + b, 0);
+
+      const ctx = document.getElementById('chartCaseStatus').getContext('2d');
+      chartInstances['caseStatus'] = new Chart(ctx, {
+        type: 'pie',
+        plugins: [ChartDataLabels],
+        data: {
+          labels: Object.keys(counts),
+          datasets: [{
+            data: Object.values(counts),
+            backgroundColor: ['#F59E0B', '#10B981', '#F43F5E'],
+            borderColor: '#111C33',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          layout: {
+            padding: 10
+          },
+          plugins: {
+            legend: { 
+              position: 'bottom', 
+              labels: { 
+                boxWidth: 8, 
+                font: { size: 10 } 
+              } 
+            },
+            datalabels: {
+              display: function(context) {
+                return context.dataset.data[context.dataIndex] > 0;
+              },
+              color: '#FFFFFF',
+              font: {
+                family: '"JetBrains Mono", monospace',
+                weight: 'bold',
+                size: 10
+              },
+              formatter: function(value) {
+                const pct = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
+                return `${value}\n(${pct}%)`;
+              },
+              textAlign: 'center'
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * 5. Demografi Umur
+     */
+    function renderAgeChart() {
+      destroyChart('age');
+
+      const order = [
+        '0-2',
+        '3-9',
+        '10-19',
+        '20-29',
+        '30-39',
+        '40-49',
+        '50-59',
+        '60 keatas'
+      ];
+
+      const counts = {};
+      order.forEach(o => counts[o] = 0);
+      counts['Tidak Dinyatakan'] = 0;
+
+      filteredDataset.forEach(d => {
+        if (counts.hasOwnProperty(d.ageGroup)) {
+          counts[d.ageGroup]++;
+        } else {
+          counts['Tidak Dinyatakan'] = (counts['Tidak Dinyatakan'] || 0) + 1;
+        }
+      });
+
+      const activeLabels = [...order, 'Tidak Dinyatakan'].filter(k => counts[k] > 0);
+      const activeValues = activeLabels.map(k => counts[k]);
+      const maxVal = activeValues.length > 0 ? Math.max(...activeValues) : 10;
+
+      const ctx = document.getElementById('chartAgeGroup').getContext('2d');
+      chartInstances['age'] = new Chart(ctx, {
+        type: 'bar',
+        plugins: [ChartDataLabels],
+        data: {
+          labels: activeLabels,
+          datasets: [{
+            label: 'Bil. Pesakit',
+            data: activeValues,
+            backgroundColor: 'rgba(16, 185, 129, 0.7)',
+            borderColor: '#10B981',
+            borderRadius: 6,
+            borderWidth: 1,
+            datalabels: {
+              display: true,
+              anchor: 'end',
+              align: 'right',
+              offset: 4,
+              color: '#34D399',
+              font: {
+                family: '"JetBrains Mono", monospace',
+                weight: 'bold',
+                size: 10
+              },
+              formatter: function(value) {
+                return value > 0 ? value : '';
+              }
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          layout: {
+            padding: {
+              right: 32
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { 
+              grid: { color: currentTheme === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: currentTheme === 'light' ? '#334155' : '#94a3b8', font: { size: 10 } }
+            },
+            y: { 
+              beginAtZero: true, 
+              grid: { color: currentTheme === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: currentTheme === 'light' ? '#334155' : '#94a3b8', precision: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * 6. Taburan Jantina
+     */
+    function renderGenderChart() {
+      destroyChart('gender');
+
+      const counts = {
+        'LELAKI': 0,
+        'PEREMPUAN': 0,
+        'LAIN-LAIN': 0
+      };
+
+      filteredDataset.forEach(d => {
+        if (d.gender === 'LELAKI') {
+          counts['LELAKI']++;
+        } else if (d.gender === 'PEREMPUAN') {
+          counts['PEREMPUAN']++;
+        } else {
+          counts['LAIN-LAIN']++;
+        }
+      });
+
+      const activeLabels = Object.keys(counts).filter(k => counts[k] > 0);
+      const activeValues = activeLabels.map(k => counts[k]);
+      const totalSum = activeValues.reduce((a, b) => a + b, 0);
+
+      const colorMap = {
+        'LELAKI': '#38BDF8',     // Sky Blue
+        'PEREMPUAN': '#EC4899',   // Pink
+        'LAIN-LAIN': '#94A3B8'    // Slate
+      };
+
+      const ctx = document.getElementById('chartGender').getContext('2d');
+      chartInstances['gender'] = new Chart(ctx, {
+        type: 'doughnut',
+        plugins: [ChartDataLabels],
+        data: {
+          labels: activeLabels,
+          datasets: [{
+            data: activeValues,
+            backgroundColor: activeLabels.map(k => colorMap[k] || '#64748B'),
+            borderColor: '#111C33',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '55%',
+          layout: {
+            padding: 10
+          },
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                boxWidth: 8,
+                font: { size: 10 }
+              }
+            },
+            datalabels: {
+              display: function(context) {
+                return context.dataset.data[context.dataIndex] > 0;
+              },
+              color: '#FFFFFF',
+              font: {
+                family: '"JetBrains Mono", monospace',
+                weight: 'bold',
+                size: 10
+              },
+              formatter: function(value) {
+                const pct = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
+                return `${value}\n(${pct}%)`;
+              },
+              textAlign: 'center'
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * 7. Bangsa / Etnik (Pie/Doughnut Chart Style Seperti Pecahan Jantina)
+     */
+    function renderRaceChart() {
+      destroyChart('race');
+
+      const counts = {};
+      filteredDataset.forEach(d => {
+        counts[d.race] = (counts[d.race] || 0) + 1;
+      });
+
+      const sorted = Object.entries(counts).sort((a,b) => b[1] - a[1]);
+      const totalSum = sorted.reduce((sum, item) => sum + item[1], 0);
+
+      const ctx = document.getElementById('chartRace').getContext('2d');
+      chartInstances['race'] = new Chart(ctx, {
+        type: 'doughnut',
+        plugins: [ChartDataLabels],
+        data: {
+          labels: sorted.map(s => s[0]),
+          datasets: [{
+            data: sorted.map(s => s[1]),
+            backgroundColor: [
+              '#38BDF8', // Cyan
+              '#F59E0B', // Amber
+              '#F43F5E', // Rose
+              '#10B981', // Emerald
+              '#A855F7', // Purple
+              '#EC4899', // Pink
+              '#94A3B8'  // Slate
+            ],
+            borderColor: '#111C33',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '55%',
+          layout: {
+            padding: 10
+          },
+          plugins: {
+            legend: { 
+              position: 'bottom', 
+              labels: { 
+                boxWidth: 8, 
+                font: { size: 10 } 
+              } 
+            },
+            datalabels: {
+              display: function(context) {
+                const val = context.dataset.data[context.dataIndex];
+                const pct = totalSum > 0 ? (val / totalSum) * 100 : 0;
+                return pct >= 4; // Papar jika 4% ke atas bagi mengelakkan pertindihan teks pada segmen kecil
+              },
+              color: '#FFFFFF',
+              font: {
+                family: '"JetBrains Mono", monospace',
+                weight: 'bold',
+                size: 9.5
+              },
+              formatter: function(value) {
+                const pct = totalSum > 0 ? ((value / totalSum) * 100).toFixed(1) : 0;
+                return `${value}\n(${pct}%)`;
+              },
+              textAlign: 'center'
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * 8. Pusat Perubatan Notifikasi (Top Fasiliti)
+     */
+    function renderHospitalChart() {
+      destroyChart('hospital');
+
+      const counts = {};
+      filteredDataset.forEach(d => {
+        counts[d.hospital] = (counts[d.hospital] || 0) + 1;
+      });
+
+      const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 7);
+      const maxVal = sorted.length > 0 ? Math.max(...sorted.map(s => s[1])) : 10;
+
+      const ctx = document.getElementById('chartHospital').getContext('2d');
+      chartInstances['hospital'] = new Chart(ctx, {
+        type: 'bar',
+        plugins: [ChartDataLabels],
+        data: {
+          labels: sorted.map(s => {
+            const name = s[0];
+            return name.length > 20 ? name.substring(0, 20) + '...' : name;
+          }),
+          datasets: [{
+            label: 'Bil. Notifikasi',
+            data: sorted.map(s => s[1]),
+            backgroundColor: 'rgba(20, 184, 166, 0.7)',
+            borderColor: '#14b8a6',
+            borderRadius: 6,
+            borderWidth: 1,
+            datalabels: {
+              display: true,
+              anchor: 'end',
+              align: 'right',
+              offset: 4,
+              color: '#2DD4BF',
+              font: {
+                family: '"JetBrains Mono", monospace',
+                weight: 'bold',
+                size: 10
+              },
+              formatter: function(value) {
+                return value > 0 ? value : '';
+              }
+            }
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          layout: {
+            padding: {
+              right: 32
+            }
+          },
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { 
+              beginAtZero: true, 
+              suggestedMax: Math.ceil(maxVal * 1.15),
+              grid: { color: currentTheme === 'light' ? 'rgba(0, 0, 0, 0.06)' : 'rgba(255, 255, 255, 0.05)' },
+              ticks: { color: currentTheme === 'light' ? '#334155' : '#94a3b8', precision: 0 }
+            },
+            y: { 
+              grid: { display: false }, 
+              ticks: { color: currentTheme === 'light' ? '#1E293B' : '#cbd5e1', font: { size: 10, weight: 'bold' } } 
+            }
+          }
+        }
+      });
+    }
+
+    /**
+     * Line Listing Dynamic Table Population
+     */
+    function renderLineListing() {
+      const tbody = document.getElementById('lineListBody');
+      const searchTerm = (document.getElementById('tableSearch')?.value || '').toLowerCase();
+      const isLight = currentTheme === 'light';
+
+      const displayList = filteredDataset.filter(item => {
+        if (!searchTerm) return true;
+        const lineStr = `${item.id} ${item.me} ${item.diagnosis} ${item.hospital} ${item.gender} ${item.race} ${item.caseStatus}`.toLowerCase();
+        return lineStr.includes(searchTerm);
+      });
+
+      // Pagination / Limit to 100 rows for rendering performance
+      const maxRows = 100;
+      const sliced = displayList.slice(0, maxRows);
+
+      document.getElementById('tablePaginationInfo').textContent = 
+        `Menunjukkan 1 hingga ${sliced.length} daripada ${displayList.length} kes yang ditapis`;
+
+      if (sliced.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="text-center py-8 ${isLight ? 'text-slate-600 font-medium' : 'text-slate-500'}">
+              <i class="fa-solid fa-folder-open text-2xl mb-2"></i><br>
+              Tiada rekod notifikasi sepadan dengan kriteria tapisan semasa.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      let html = '';
+      sliced.forEach((item, index) => {
+        let statusBadge = '';
+        if (item.actionCategory === 'BELUM_TINDAKAN') {
+          statusBadge = isLight
+            ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300"><i class="fa-solid fa-clock mr-1"></i> Belum Ambil Tindakan</span>'
+            : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30"><i class="fa-solid fa-clock mr-1"></i> Belum Ambil Tindakan</span>';
+        } else if (item.actionCategory === 'DAFTAR') {
+          statusBadge = isLight
+            ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300"><i class="fa-solid fa-circle-check mr-1"></i> ' + (item.rawNotificationStatus || 'Daftar Notifikasi / Kes') + '</span>'
+            : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30"><i class="fa-solid fa-circle-check mr-1"></i> ' + (item.rawNotificationStatus || 'Daftar Notifikasi / Kes') + '</span>';
+        } else if (item.actionCategory === 'ABAI') {
+          statusBadge = isLight
+            ? '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-300"><i class="fa-solid fa-ban mr-1"></i> Abai Notifikasi</span>'
+            : '<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30"><i class="fa-solid fa-ban mr-1"></i> Abai Notifikasi</span>';
+        } else {
+          statusBadge = isLight
+            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-800 border border-slate-300"><i class="fa-solid fa-info mr-1"></i> ${item.rawNotificationStatus || 'Lain-lain'}</span>`
+            : `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/10 text-slate-300 border border-slate-500/30"><i class="fa-solid fa-info mr-1"></i> ${item.rawNotificationStatus || 'Lain-lain'}</span>`;
+        }
+
+        const trHover = isLight ? 'hover:bg-slate-100' : 'hover:bg-slate-800/40';
+        const idColor = isLight ? 'text-slate-600 font-bold' : 'text-slate-400';
+        const meColor = isLight ? 'text-sky-700 font-extrabold' : 'text-cyan-400';
+        const diagColor = isLight ? 'text-slate-900 font-bold' : 'text-white font-semibold';
+        const regularColor = isLight ? 'text-slate-800 font-medium' : 'text-slate-300';
+        const hospColor = isLight ? 'text-slate-700 font-medium' : 'text-slate-300';
+        const caseStatusColor = isLight ? 'text-slate-600 font-semibold' : 'text-slate-400';
+
+        html += `
+          <tr class="${trHover} transition-colors">
+            <td class="py-2.5 px-4 font-mono ${idColor}">#${item.id}</td>
+            <td class="py-2.5 px-4 font-mono ${meColor}">${item.me}</td>
+            <td class="py-2.5 px-4 ${diagColor}">${item.diagnosis}</td>
+            <td class="py-2.5 px-4 ${regularColor}">${item.gender}</td>
+            <td class="py-2.5 px-4 ${regularColor}">${item.rawAge || item.ageGroup}</td>
+            <td class="py-2.5 px-4 ${regularColor}">${item.race}</td>
+            <td class="py-2.5 px-4 ${hospColor} max-w-[200px] truncate" title="${item.hospital}">${item.hospital}</td>
+            <td class="py-2.5 px-4 text-[11px] font-mono ${caseStatusColor}">${item.caseStatus}</td>
+            <td class="py-2.5 px-4">${statusBadge}</td>
+          </tr>
+        `;
+      });
+
+      tbody.innerHTML = html;
+    }
+
+    function filterTableSearch() {
+      renderLineListing();
+    }
+
+    /**
+     * CSV Export Functionality (Native & Safe)
+     */
+    function exportCurrentViewCSV() {
+      if (filteredDataset.length === 0) {
+        showToast("Tiada data untuk dieksport!");
+        return;
+      }
+
+      const headers = ["ID", "Minggu Epid", "Diagnosis", "Jantina", "Kategori Umur", "Bangsa", "Pusat Perubatan", "Status Kes", "Status Tindakan"];
+      const rows = filteredDataset.map(d => [
+        d.id,
+        `"${d.me}"`,
+        `"${d.diagnosis.replace(/"/g, '""')}"`,
+        `"${d.gender}"`,
+        `"${d.ageGroup}"`,
+        `"${d.race}"`,
+        `"${d.hospital.replace(/"/g, '""')}"`,
+        `"${d.caseStatus.replace(/"/g, '""')}"`,
+        `"${d.actionCategory}"`
+      ]);
+
+      const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `Data_Notifikasi_PKD_Kepong_${new Date().toISOString().slice(0,10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    /**
+     * Non-intrusive Toast UI (Alternative to forbidden alert)
+     */
+    function showToast(message) {
+      const existing = document.getElementById('customToast');
+      if (existing) existing.remove();
+
+      const toast = document.createElement('div');
+      toast.id = 'customToast';
+      toast.className = 'fixed bottom-5 right-5 z-50 bg-slate-900 border border-cyan-500/40 text-cyan-300 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2 text-xs font-semibold animate-bounce';
+      toast.innerHTML = `<i class="fa-solid fa-circle-info text-cyan-400"></i> <span>${message}</span>`;
+      document.body.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 3500);
+    }
+
+    // Auto-fetch data upon window load
+    window.onload = function() {
+      fetchAndInitData();
+    };
+  </script>
+</body>
+</html>
